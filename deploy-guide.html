@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WC26 Pool — Guía de Despliegue en Vercel</title>
+  <style>
+    :root {
+      --navy:  #010915;
+      --blue:  #0055B8;
+      --blue2: #0070E0;
+      --green: #006847;
+      --red:   #CE1126;
+      --gold:  #F5A623;
+      --text:  #E8EDF5;
+      --muted: #7A90AA;
+      --card:  #0A1628;
+      --border:#1A2E4A;
+      --code:  #071120;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--navy);
+      color: var(--text);
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Top bar ── */
+    header {
+      background: linear-gradient(135deg, rgba(0,85,184,0.30) 0%, rgba(1,9,21,0.95) 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(20px);
+    }
+    .header-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .header-badge {
+      background: linear-gradient(135deg, #0055B8, #0080FF);
+      color: white;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+    header h1 {
+      font-size: 16px;
+      font-weight: 700;
+      color: white;
+    }
+    header p {
+      font-size: 12px;
+      color: var(--muted);
+      margin-left: auto;
+    }
+
+    /* ── Tricolor bar ── */
+    .tricolor {
+      height: 3px;
+      background: linear-gradient(90deg,
+        #006847 0%, #006847 33.3%,
+        white 33.3%, white 40%,
+        #CE1126 40%, #CE1126 100%
+      );
+    }
+
+    /* ── Layout ── */
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 48px 32px 80px;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      text-align: center;
+      padding: 56px 0 48px;
+      position: relative;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -40px; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 300px;
+      background: radial-gradient(ellipse at center, rgba(0,85,184,0.25) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-eyebrow {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.25em;
+      color: rgba(0,150,255,0.70);
+      margin-bottom: 16px;
+    }
+    .hero h2 {
+      font-size: 38px;
+      font-weight: 900;
+      color: white;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+    .hero h2 span { color: #4499FF; }
+    .hero p {
+      font-size: 15px;
+      color: var(--muted);
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    /* ── TOC ── */
+    .toc {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px 28px;
+      margin-bottom: 48px;
+    }
+    .toc h3 {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.20em;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+    .toc ol {
+      list-style: none;
+      counter-reset: toc;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 24px;
+    }
+    .toc li {
+      counter-increment: toc;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .toc li::before {
+      content: counter(toc);
+      min-width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      background: rgba(0,85,184,0.25);
+      border: 1px solid rgba(0,120,255,0.25);
+      color: #4499FF;
+      font-size: 11px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .toc a {
+      color: rgba(255,255,255,0.65);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      transition: color 0.15s;
+    }
+    .toc a:hover { color: white; }
+
+    /* ── Section ── */
+    .section {
+      margin-bottom: 56px;
+      scroll-margin-top: 80px;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .step-num {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(145deg, rgba(0,85,184,0.60), rgba(0,50,140,0.80));
+      border: 1px solid rgba(0,120,255,0.35);
+      color: white;
+      font-size: 15px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 2px 12px rgba(0,85,184,0.30);
+    }
+    .section-header h2 {
+      font-size: 20px;
+      font-weight: 800;
+      color: white;
+    }
+    .section-header small {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 500;
+      display: block;
+      margin-top: 2px;
+    }
+
+    /* ── Prose ── */
+    p { font-size: 14px; color: rgba(232,237,245,0.80); margin-bottom: 14px; }
+    h3 { font-size: 14px; font-weight: 700; color: white; margin: 20px 0 10px; }
+
+    /* ── Card ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 24px;
+      margin-bottom: 16px;
+    }
+    .card-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    /* ── Steps list ── */
+    .steps {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .steps li {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 18px;
+    }
+    .step-icon {
+      font-size: 18px;
+      line-height: 1;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .steps li > div strong {
+      display: block;
+      font-size: 14px;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 4px;
+    }
+    .steps li > div span {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* ── Code block ── */
+    pre {
+      background: var(--code);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      overflow-x: auto;
+      margin: 12px 0 16px;
+      font-family: 'SF Mono', 'Fira Code', 'Fira Mono', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    code {
+      font-family: 'SF Mono', 'Fira Code', 'Fira Mono', monospace;
+      font-size: 12px;
+      background: rgba(0,85,184,0.18);
+      border: 1px solid rgba(0,120,255,0.20);
+      color: #7DBFFF;
+      padding: 1px 6px;
+      border-radius: 5px;
+    }
+    pre code {
+      background: none;
+      border: none;
+      padding: 0;
+      font-size: inherit;
+      color: inherit;
+    }
+    .comment { color: #4A6080; }
+    .key     { color: #7DBFFF; }
+    .val     { color: #A8D8A8; }
+    .str     { color: #FFD580; }
+    .cmd     { color: #B0C4DE; }
+    .dollar  { color: var(--muted); user-select: none; }
+
+    /* ── Env table ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 12px 0 16px;
+    }
+    thead th {
+      text-align: left;
+      padding: 10px 14px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+    tbody tr { border-bottom: 1px solid rgba(26,46,74,0.60); }
+    tbody tr:last-child { border-bottom: none; }
+    tbody td { padding: 12px 14px; vertical-align: top; }
+    .var-name {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 12px;
+      color: #7DBFFF;
+      white-space: nowrap;
+    }
+    .var-where { color: var(--muted); }
+    .var-req {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.10em;
+      padding: 2px 7px;
+      border-radius: 20px;
+    }
+    .req-yes { background: rgba(0,104,71,0.25); color: #4CAF82; border: 1px solid rgba(0,104,71,0.40); }
+    .req-opt { background: rgba(245,166,35,0.15); color: #F5A623; border: 1px solid rgba(245,166,35,0.30); }
+
+    /* ── Alert ── */
+    .alert {
+      display: flex;
+      gap: 12px;
+      padding: 14px 18px;
+      border-radius: 12px;
+      margin: 16px 0;
+      font-size: 13px;
+    }
+    .alert-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .alert p { margin: 0; font-size: 13px; line-height: 1.55; }
+    .alert strong { color: white; }
+    .alert-warn {
+      background: rgba(245,166,35,0.10);
+      border: 1px solid rgba(245,166,35,0.28);
+      color: rgba(245,166,35,0.90);
+    }
+    .alert-info {
+      background: rgba(0,85,184,0.12);
+      border: 1px solid rgba(0,120,255,0.25);
+      color: rgba(100,170,255,0.90);
+    }
+    .alert-ok {
+      background: rgba(0,104,71,0.12);
+      border: 1px solid rgba(0,104,71,0.28);
+      color: rgba(80,200,130,0.90);
+    }
+
+    /* ── Checklist ── */
+    .checklist {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .checklist li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13px;
+      color: rgba(232,237,245,0.75);
+      padding: 10px 14px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    .checklist li::before {
+      content: '□';
+      color: rgba(0,120,255,0.50);
+      font-size: 15px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    footer strong { color: rgba(255,255,255,0.50); }
+
+    @media (max-width: 640px) {
+      .container { padding: 32px 20px 60px; }
+      .header-inner { padding: 14px 20px; }
+      .hero h2 { font-size: 26px; }
+      .toc ol { grid-template-columns: 1fr; }
+      footer { padding: 24px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <span class="header-badge">Deploy Guide</span>
+    <h1>WC26 Pool</h1>
+    <p>Vercel + Supabase · 2026</p>
+  </div>
+</header>
+<div class="tricolor"></div>
+
+<div class="container">
+
+  <!-- ── Hero ── -->
+  <div class="hero">
+    <div class="hero-eyebrow">FIFA World Cup™ 2026</div>
+    <h2>Despliegue en <span>Vercel</span></h2>
+    <p>Guía completa para llevar WC26 Pool a producción: Supabase, variables de entorno, migraciones y cron jobs.</p>
+  </div>
+
+  <!-- ── TOC ── -->
+  <div class="toc">
+    <h3>Contenido</h3>
+    <ol>
+      <li><a href="#s1">Prerequisitos</a></li>
+      <li><a href="#s2">Supabase en producción</a></li>
+      <li><a href="#s3">Ejecutar migraciones</a></li>
+      <li><a href="#s4">Variables de entorno</a></li>
+      <li><a href="#s5">Desplegar en Vercel</a></li>
+      <li><a href="#s6">Cron jobs</a></li>
+      <li><a href="#s7">Dominio personalizado</a></li>
+      <li><a href="#s8">Checklist post-deploy</a></li>
+    </ol>
+  </div>
+
+  <!-- ── 1. Prerequisitos ── -->
+  <section class="section" id="s1">
+    <div class="section-header">
+      <div class="step-num">1</div>
+      <div>
+        <h2>Prerequisitos</h2>
+        <small>Cuentas y herramientas requeridas antes de comenzar</small>
+      </div>
+    </div>
+
+    <ul class="steps">
+      <li>
+        <span class="step-icon">🐙</span>
+        <div>
+          <strong>Repositorio en GitHub</strong>
+          <span>El código debe estar en un repo de GitHub (o GitLab/Bitbucket). Vercel lo conecta directamente. Si aún no está: <code>git remote add origin https://github.com/tu-usuario/wc26-pool.git</code></span>
+        </div>
+      </li>
+      <li>
+        <span class="step-icon">🟢</span>
+        <div>
+          <strong>Cuenta Supabase</strong>
+          <span>Crea una cuenta en <strong>supabase.com</strong>. El plan Free incluye 2 proyectos activos, 500 MB de DB y 1 GB de almacenamiento — suficiente para el torneo.</span>
+        </div>
+      </li>
+      <li>
+        <span class="step-icon">▲</span>
+        <div>
+          <strong>Cuenta Vercel</strong>
+          <span>Crea una cuenta en <strong>vercel.com</strong> y conéctala a tu cuenta de GitHub. El plan Hobby es gratuito e incluye cron jobs en proyectos con el add-on de Cron.</span>
+        </div>
+      </li>
+      <li>
+        <span class="step-icon">⚽</span>
+        <div>
+          <strong>API-Football (opcional)</strong>
+          <span>Para sync automático de resultados en vivo. Crea cuenta en <strong>api-football.com</strong> → plan Basic (~$10/mes) o usa el Free tier (100 req/día, suficiente para pruebas).</span>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- ── 2. Supabase ── -->
+  <section class="section" id="s2">
+    <div class="section-header">
+      <div class="step-num">2</div>
+      <div>
+        <h2>Supabase en producción</h2>
+        <small>Crear el proyecto de producción y obtener las credenciales</small>
+      </div>
+    </div>
+
+    <ul class="steps">
+      <li>
+        <span class="step-icon">1️⃣</span>
+        <div>
+          <strong>Crear proyecto</strong>
+          <span>En <strong>supabase.com/dashboard</strong> → <em>New project</em>. Elige una región cercana a tu audiencia (<em>us-east-1</em> para México/USA/Canadá). Guarda bien la <strong>Database Password</strong>.</span>
+        </div>
+      </li>
+      <li>
+        <span class="step-icon">2️⃣</span>
+        <div>
+          <strong>Obtener credenciales</strong>
+          <span>En el proyecto creado: <em>Settings → API</em>. Copia los tres valores que necesitarás: <code>Project URL</code>, <code>anon public key</code> y <code>service_role key</code>.</span>
+        </div>
+      </li>
+      <li>
+        <span class="step-icon">3️⃣</span>
+        <div>
+          <strong>Configurar Auth</strong>
+          <span>En <em>Authentication → URL Configuration</em>: agrega tu dominio de Vercel (<code>https://tu-app.vercel.app</code>) en <strong>Site URL</strong> y en <strong>Redirect URLs</strong>. Puedes editar esto después de obtener la URL de Vercel.</span>
+        </div>
+      </li>
+      <li>
+        <span class="step-icon">4️⃣</span>
+        <div>
+          <strong>Habilitar Email Auth</strong>
+          <span>En <em>Authentication → Providers → Email</em>: asegúrate que esté habilitado. Para producción desactiva "Confirm email" o configura un dominio SMTP personalizado para los correos de confirmación.</span>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- ── 3. Migraciones ── -->
+  <section class="section" id="s3">
+    <div class="section-header">
+      <div class="step-num">3</div>
+      <div>
+        <h2>Ejecutar migraciones</h2>
+        <small>Aplicar schema, equipos y partidos en la base de datos de producción</small>
+      </div>
+    </div>
+
+    <p>Las tres migraciones en <code>supabase/migrations/</code> deben ejecutarse en orden. Hay dos formas:</p>
+
+    <h3>Opción A — Supabase CLI (recomendado)</h3>
+    <pre><code><span class="dollar">$ </span><span class="cmd">npm install -g supabase</span>
+
+<span class="comment"># Enlaza con tu proyecto de producción</span>
+<span class="dollar">$ </span><span class="cmd">supabase link --project-ref &lt;tu-project-ref&gt;</span>
+
+<span class="comment"># Ejecuta todas las migraciones</span>
+<span class="dollar">$ </span><span class="cmd">supabase db push</span></code></pre>
+
+    <p>El <code>project-ref</code> está en la URL de tu dashboard: <code>supabase.com/dashboard/project/<strong>abc123xyz</strong></code></p>
+
+    <h3>Opción B — SQL Editor manual</h3>
+    <p>En tu dashboard de Supabase, ve a <em>SQL Editor</em> y ejecuta los archivos en este orden:</p>
+
+    <ul class="steps">
+      <li>
+        <span class="step-icon">📄</span>
+        <div>
+          <strong>001_schema.sql</strong>
+          <span>Crea todas las tablas, tipos, funciones, triggers y políticas RLS. Ejecutar primero — el resto depende de él.</span>
+        </div>
+      </li>
+      <li>
+        <span class="step-icon">🌎</span>
+        <div>
+          <strong>002_seed_teams.sql</strong>
+          <span>Inserta los 48 equipos clasificados al Mundial 2026 con sus grupos (A–L) y códigos FIFA.</span>
+        </div>
+      </li>
+      <li>
+        <span class="step-icon">📅</span>
+        <div>
+          <strong>003_seed_matches.sql</strong>
+          <span>Inserta los 72 partidos de la fase de grupos con fechas y sedes. Si tienes la llave eliminatoria confirmada, agrégala aquí.</span>
+        </div>
+      </li>
+    </ul>
+
+    <div class="alert alert-warn">
+      <span class="alert-icon">⚠️</span>
+      <p><strong>No ejecutes en orden incorrecto.</strong> El <code>003_seed_matches.sql</code> hace referencia a los equipos del <code>002</code>. Si hay error de FK, verifica que el 002 se ejecutó correctamente primero.</p>
+    </div>
+  </section>
+
+  <!-- ── 4. Variables de entorno ── -->
+  <section class="section" id="s4">
+    <div class="section-header">
+      <div class="step-num">4</div>
+      <div>
+        <h2>Variables de entorno</h2>
+        <small>Todas las variables que necesita la aplicación en producción</small>
+      </div>
+    </div>
+
+    <p>Estas son las variables que debes configurar en Vercel (<em>Project → Settings → Environment Variables</em>). Márcalas para los entornos <strong>Production</strong>, <strong>Preview</strong> y <strong>Development</strong>.</p>
+
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Variable</th>
+            <th>Dónde obtenerla</th>
+            <th>Req.</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="var-name">NEXT_PUBLIC_SUPABASE_URL</td>
+            <td class="var-where">Supabase → Settings → API → Project URL</td>
+            <td><span class="var-req req-yes">Sí</span></td>
+          </tr>
+          <tr>
+            <td class="var-name">NEXT_PUBLIC_SUPABASE_ANON_KEY</td>
+            <td class="var-where">Supabase → Settings → API → anon public</td>
+            <td><span class="var-req req-yes">Sí</span></td>
+          </tr>
+          <tr>
+            <td class="var-name">SUPABASE_SERVICE_ROLE_KEY</td>
+            <td class="var-where">Supabase → Settings → API → service_role (secreto)</td>
+            <td><span class="var-req req-yes">Sí</span></td>
+          </tr>
+          <tr>
+            <td class="var-name">CRON_SECRET</td>
+            <td class="var-where">Genera tú mismo: mínimo 32 chars aleatorios</td>
+            <td><span class="var-req req-yes">Sí</span></td>
+          </tr>
+          <tr>
+            <td class="var-name">API_FOOTBALL_KEY</td>
+            <td class="var-where">api-football.com → Dashboard → My Account → API Key</td>
+            <td><span class="var-req req-opt">Opt.</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Generar CRON_SECRET</h3>
+    <pre><code><span class="comment"># En tu terminal local:</span>
+<span class="dollar">$ </span><span class="cmd">openssl rand -hex 32</span>
+
+<span class="comment"># O en Node.js:</span>
+<span class="dollar">$ </span><span class="cmd">node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"</span></code></pre>
+
+    <div class="alert alert-warn">
+      <span class="alert-icon">🔒</span>
+      <p><strong>SUPABASE_SERVICE_ROLE_KEY</strong> tiene acceso total a la base de datos, ignorando RLS. Nunca la expongas al cliente ni la comitas al repositorio. Úsala solo en variables de entorno del servidor.</p>
+    </div>
+  </section>
+
+  <!-- ── 5. Vercel ── -->
+  <section class="section" id="s5">
+    <div class="section-header">
+      <div class="step-num">5</div>
+      <div>
+        <h2>Desplegar en Vercel</h2>
+        <small>Conectar el repositorio y hacer el primer deploy</small>
+      </div>
+    </div>
+
+    <ul class="steps">
+      <li>
+        <span class="step-icon">1️⃣</span>
+        <div>
+          <strong>Importar proyecto</strong>
+          <span>En <strong>vercel.com/new</strong> → <em>Import Git Repository</em> → selecciona el repositorio de GitHub. Si no aparece, instala la integración de GitHub en Vercel.</span>
+        </div>
+      </li>
+      <li>
+        <span class="step-icon">2️⃣</span>
+        <div>
+          <strong>Configurar el proyecto</strong>
+          <span>Framework: <strong>Next.js</strong> (detectado automáticamente). Build command: <code>npm run build</code>. Output directory: déjalo en blanco (Next.js lo maneja).</span>
+        </div>
+      </li>
+      <li>
+        <span class="step-icon">3️⃣</span>
+        <div>
+          <strong>Agregar variables de entorno</strong>
+          <span>Antes de hacer click en Deploy, expande <em>Environment Variables</em> y agrega todas las variables del paso 4. También puedes agregarlas después desde Settings.</span>
+        </div>
+      </li>
+      <li>
+        <span class="step-icon">4️⃣</span>
+        <div>
+          <strong>Primer deploy</strong>
+          <span>Haz click en <em>Deploy</em>. Vercel construirá y desplegará automáticamente. El proceso toma 1–3 minutos. Obtendrás una URL <code>*.vercel.app</code>.</span>
+        </div>
+      </li>
+      <li>
+        <span class="step-icon">5️⃣</span>
+        <div>
+          <strong>Actualizar Supabase con la URL</strong>
+          <span>Copia tu URL de Vercel y agrégala en Supabase → <em>Authentication → URL Configuration → Site URL</em> y también en <em>Redirect URLs</em>.</span>
+        </div>
+      </li>
+    </ul>
+
+    <div class="alert alert-info">
+      <span class="alert-icon">ℹ️</span>
+      <p><strong>Deploys automáticos:</strong> cada push a <code>main</code> dispara un nuevo deploy en producción. Los PRs crean entornos de Preview con su propia URL temporal.</p>
+    </div>
+
+    <h3>Re-deploy tras cambiar variables</h3>
+    <p>Si agregas o cambias variables de entorno después del primer deploy, necesitas hacer un re-deploy manual para que tomen efecto:</p>
+    <pre><code><span class="dollar">$ </span><span class="cmd">vercel --prod</span>
+
+<span class="comment"># O desde el dashboard: Deployments → ⋯ → Redeploy</span></code></pre>
+  </section>
+
+  <!-- ── 6. Cron ── -->
+  <section class="section" id="s6">
+    <div class="section-header">
+      <div class="step-num">6</div>
+      <div>
+        <h2>Cron jobs</h2>
+        <small>Sincronización automática de resultados cada 5 minutos</small>
+      </div>
+    </div>
+
+    <p>El proyecto ya incluye <code>vercel.json</code> con la configuración del cron job:</p>
+
+    <pre><code><span class="comment">// vercel.json</span>
+{
+  <span class="key">"crons"</span>: [
+    {
+      <span class="key">"path"</span>: <span class="str">"/api/cron/sync"</span>,
+      <span class="key">"schedule"</span>: <span class="str">"*/5 * * * *"</span>
+    }
+  ]
+}</code></pre>
+
+    <p>Vercel ejecuta <code>/api/cron/sync</code> cada 5 minutos durante el torneo. El endpoint verifica el header <code>Authorization: Bearer &lt;CRON_SECRET&gt;</code> para rechazar llamadas no autorizadas.</p>
+
+    <ul class="steps">
+      <li>
+        <span class="step-icon">⚙️</span>
+        <div>
+          <strong>Verificar en Vercel</strong>
+          <span>En tu proyecto → <em>Cron Jobs</em> (en la barra lateral). Verás el cron listado con la última ejecución y su status. Si no aparece, asegúrate de que el <code>vercel.json</code> esté en la raíz del proyecto.</span>
+        </div>
+      </li>
+      <li>
+        <span class="step-icon">🔑</span>
+        <div>
+          <strong>CRON_SECRET en Vercel</strong>
+          <span>El mismo valor que generaste en el paso 4 debe estar en las variables de entorno de Vercel. El endpoint lo valida con <code>process.env.CRON_SECRET</code>.</span>
+        </div>
+      </li>
+      <li>
+        <span class="step-icon">🧪</span>
+        <div>
+          <strong>Probar manualmente</strong>
+          <span>Puedes disparar el cron desde el dashboard de Vercel → <em>Cron Jobs → Run Now</em>, o con curl usando tu <code>CRON_SECRET</code>.</span>
+        </div>
+      </li>
+    </ul>
+
+    <pre><code><span class="comment"># Disparar el cron manualmente para probar</span>
+<span class="dollar">$ </span><span class="cmd">curl -X GET https://tu-app.vercel.app/api/cron/sync \
+  -H "Authorization: Bearer TU_CRON_SECRET"</span></code></pre>
+
+    <div class="alert alert-info">
+      <span class="alert-icon">ℹ️</span>
+      <p><strong>Plan Vercel Hobby:</strong> los cron jobs están disponibles pero con un límite de 2 crons y ejecución mínima de 1 vez por hora en algunos planes. Si necesitas cada 5 minutos, activa el <strong>Cron Jobs add-on</strong> o usa el plan Pro.</p>
+    </div>
+  </section>
+
+  <!-- ── 7. Dominio ── -->
+  <section class="section" id="s7">
+    <div class="section-header">
+      <div class="step-num">7</div>
+      <div>
+        <h2>Dominio personalizado</h2>
+        <small>Apuntar tu propio dominio a la app desplegada</small>
+      </div>
+    </div>
+
+    <ul class="steps">
+      <li>
+        <span class="step-icon">1️⃣</span>
+        <div>
+          <strong>Agregar dominio en Vercel</strong>
+          <span>En tu proyecto → <em>Settings → Domains → Add</em>. Escribe tu dominio, por ejemplo <code>wc26pool.com</code> o <code>pool.midominio.com</code>.</span>
+        </div>
+      </li>
+      <li>
+        <span class="step-icon">2️⃣</span>
+        <div>
+          <strong>Configurar DNS</strong>
+          <span>Vercel te dará un valor CNAME o un registro A. Agrégalo en tu proveedor de DNS (GoDaddy, Namecheap, Cloudflare, etc.). La propagación toma entre 5 minutos y 48 horas.</span>
+        </div>
+      </li>
+      <li>
+        <span class="step-icon">3️⃣</span>
+        <div>
+          <strong>SSL automático</strong>
+          <span>Vercel provisiona un certificado SSL/TLS vía Let's Encrypt automáticamente. No necesitas configurar nada extra.</span>
+        </div>
+      </li>
+      <li>
+        <span class="step-icon">4️⃣</span>
+        <div>
+          <strong>Actualizar Supabase Auth</strong>
+          <span>Agrega tu nuevo dominio en Supabase → <em>Authentication → URL Configuration</em>: actualiza <em>Site URL</em> y agrega el dominio a <em>Redirect URLs</em>.</span>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- ── 8. Checklist ── -->
+  <section class="section" id="s8">
+    <div class="section-header">
+      <div class="step-num">8</div>
+      <div>
+        <h2>Checklist post-deploy</h2>
+        <small>Verifica que todo funciona antes de compartir el link</small>
+      </div>
+    </div>
+
+    <ul class="checklist">
+      <li>La URL de producción carga sin errores 500 en la consola del servidor (revisa Vercel → Functions logs)</li>
+      <li>El registro de usuario funciona y crea un perfil en Supabase → <em>Table Editor → profiles</em></li>
+      <li>El login redirige al dashboard correctamente</li>
+      <li>La página de Partidos muestra los 72 partidos de grupos con fechas y banderas</li>
+      <li>Se puede guardar una predicción (aparece en Supabase → <em>predictions_groups</em>)</li>
+      <li>El Bracket queda bloqueado hasta completar los 72 partidos de grupos</li>
+      <li>La página de Quinielas permite crear y unirse a una quiniela con código</li>
+      <li>La Tabla muestra la posición de los usuarios de la quiniela activa</li>
+      <li>El cron <code>/api/cron/sync</code> responde 200 cuando se llama con el <code>CRON_SECRET</code> correcto</li>
+      <li>Supabase → <em>Authentication → URL Configuration</em> tiene el dominio de producción en Redirect URLs</li>
+      <li><code>SUPABASE_SERVICE_ROLE_KEY</code> NO aparece en el código del cliente (verifica con DevTools → Network)</li>
+    </ul>
+
+    <div class="alert alert-ok" style="margin-top: 24px;">
+      <span class="alert-icon">✅</span>
+      <p><strong>¡Listo para el Mundial!</strong> Si todos los puntos están marcados, la app está lista. Comparte el link de invitación con tus jugadores desde <em>/pools</em>.</p>
+    </div>
+
+    <h3>Monitoreo en producción</h3>
+    <ul class="steps" style="margin-top: 12px;">
+      <li>
+        <span class="step-icon">📊</span>
+        <div>
+          <strong>Logs de Vercel</strong>
+          <span>Vercel → tu proyecto → <em>Functions</em> muestra los logs de Server Actions y API routes en tiempo real. Ideal para detectar errores en producción.</span>
+        </div>
+      </li>
+      <li>
+        <span class="step-icon">🛢️</span>
+        <div>
+          <strong>Supabase Dashboard</strong>
+          <span>En <em>Database → Table Editor</em> puedes ver y editar datos directamente. En <em>Logs → API</em> ves todas las queries en tiempo real.</span>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+</div><!-- /container -->
+
+<footer>
+  <p>🇲🇽 🇨🇦 🇺🇸 &nbsp; <strong>WC26 Pool</strong> &nbsp; · &nbsp; Canadá · México · USA 2026 &nbsp; · &nbsp; Generado el 17 de mayo de 2026</p>
+</footer>
+
+</body>
+</html>
