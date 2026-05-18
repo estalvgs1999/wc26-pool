@@ -11,6 +11,13 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        wc: {
+          navy:  '#010915',
+          blue:  '#0055B8',
+          green: '#006847',
+          red:   '#CE1126',
+          gold:  '#F5A623',
+        },
       },
     },
   },

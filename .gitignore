@@ -34,3 +34,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Supabase local CLI state
+supabase/.branches
+supabase/.temp
+
+# Mock API generated files (created by seed-test.mjs)
+scripts/mock-base-fixtures.json
+scripts/mock-state.json
