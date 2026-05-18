@@ -2,26 +2,111 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-top:    env(safe-area-inset-top, 0px);
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+    /* FIFA WC 2026 palette */
+    --wc-navy:  #010915;
+    --wc-blue:  #0055B8;
+    --wc-green: #006847;
+    --wc-red:   #CE1126;
+    --wc-gold:  #F5A623;
+  }
+
+  html {
+    background-color: var(--wc-navy);
+    color: white;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
+    scroll-behavior: smooth;
+  }
+
+  * { box-sizing: border-box; }
+
+  ::-webkit-scrollbar { display: none; }
+  * { scrollbar-width: none; }
+
+  input[type='number'] { -moz-appearance: textfield; }
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button { -webkit-appearance: none; }
 }
 
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
+  .safe-pb {
+    padding-bottom: max(0.5rem, var(--safe-area-bottom));
+  }
+  .safe-pt {
+    padding-top: max(0.5rem, var(--safe-area-top));
+  }
+
+  /* Premium glass card — inset highlight + depth shadow */
+  .glass {
+    @apply backdrop-blur-xl rounded-2xl;
+    background: linear-gradient(160deg,
+      rgba(255,255,255,0.07) 0%,
+      rgba(255,255,255,0.02) 100%
+    );
+    border: 1px solid rgba(255,255,255,0.09);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.10),
+      0 4px 32px rgba(0,0,0,0.45);
+  }
+
+  /* FIFA Blue tinted glass — for CTAs and primary actions */
+  .glass-blue {
+    @apply backdrop-blur-xl rounded-2xl;
+    background: linear-gradient(160deg,
+      rgba(0,85,184,0.18) 0%,
+      rgba(0,85,184,0.07) 100%
+    );
+    border: 1px solid rgba(0,85,184,0.30);
+    box-shadow:
+      inset 0 1px 0 rgba(100,170,255,0.15),
+      0 4px 24px rgba(0,85,184,0.20);
+  }
+
+  /* Hero gradient — stadium spotlights */
+  .wc-hero {
+    background:
+      radial-gradient(ellipse 110% 55% at 50% -15%, rgba(0,85,184,0.40) 0%, transparent 65%),
+      radial-gradient(ellipse 60% 40% at 15% 70%, rgba(0,104,71,0.20) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 40% at 85% 80%, rgba(206,17,38,0.18) 0%, transparent 60%),
+      var(--wc-navy);
+  }
+
+  /* Subtle pitch grid */
+  .pitch-grid {
+    background-image:
+      linear-gradient(rgba(0,85,184,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,85,184,0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* Tricolor gradient line */
+  .tricolor-bar {
+    background: linear-gradient(90deg,
+      var(--wc-green) 0%,
+      var(--wc-green) 33.3%,
+      white 33.3%,
+      white 40%,
+      var(--wc-red) 40%,
+      var(--wc-red) 100%
+    );
+  }
+
+  .text-gradient {
+    @apply bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent;
+  }
+
+  .glow-gold {
+    box-shadow: 0 0 32px rgba(245,166,35,0.25);
+  }
+  .glow-green {
+    box-shadow: 0 0 32px rgba(0,104,71,0.30);
+  }
+  .glow-blue {
+    box-shadow: 0 0 32px rgba(0,85,184,0.30);
   }
 }
