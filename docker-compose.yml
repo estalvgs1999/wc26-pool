@@ -1,12 +1,17 @@
 # ============================================================
 # WC26 Prediction Pool — Docker Compose (local / staging)
 #
-# Incluye el stack mínimo de Supabase (Postgres + Auth + REST)
-# más el servidor Next.js.
+# ⚠️  ADVERTENCIA: Este archivo usa tokens JWT de demo de Supabase
+#    como valores por defecto. Son tokens PÚBLICOS y EXPIRADOS,
+#    válidos SOLO para desarrollo local.
+#    NUNCA usar en producción sin reemplazar TODAS las variables.
 #
 # Uso:
 #   cp .env.local.example .env.local   # edita con tus valores
 #   docker compose up --build
+#
+# Para obtener ANON_KEY y SERVICE_ROLE_KEY locales:
+#   supabase start && supabase status
 #
 # Credenciales por defecto (local dev):
 #   Studio:    http://localhost:54323
@@ -161,7 +166,8 @@ services:
       NEXT_PUBLIC_SUPABASE_URL: http://localhost:54321
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRFA0NiK7W9oV52NT5h_kHFvY_kQv_kWNvfKzPKlJGo}
       # El servidor Next.js puede apuntar internamente a Kong
-      SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZkyAFByG6-4N_XCkXl7BobCCRBsxaaTjdcg}
+      # ⚠️  Requerido explícitamente — no tiene valor por defecto
+      SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY:?Configura SERVICE_ROLE_KEY (obtener con: supabase status)}
       CRON_SECRET: ${CRON_SECRET:-local-dev-cron-secret}
       API_FOOTBALL_KEY: ${API_FOOTBALL_KEY:-}
     ports:

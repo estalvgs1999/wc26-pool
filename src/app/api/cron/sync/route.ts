@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { timingSafeEqual } from 'crypto'
 import type { MatchStage } from '@/types'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -122,10 +123,19 @@ function resolveWinnerTeamId(
 
 // ── Main handler ──────────────────────────────────────────────
 export async function GET(request: NextRequest) {
-  // Verify Vercel Cron authorization
+  // Verify Vercel Cron authorization (constant-time to prevent timing attacks)
+  const cronSecret = process.env.CRON_SECRET
   const auth = request.headers.get('authorization')
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (
+    !cronSecret ||
+    !auth ||
+    !timingSafeEqual(Buffer.from(auth), Buffer.from(`Bearer ${cronSecret}`))
+  ) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  if (!process.env.API_FOOTBALL_KEY && !process.env.API_FOOTBALL_BASE) {
+    return NextResponse.json({ error: 'API_FOOTBALL_KEY is not configured' }, { status: 500 })
   }
 
   // Service-role client — typed as any because generated DB types are not yet available.

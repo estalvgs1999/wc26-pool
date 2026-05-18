@@ -35,7 +35,10 @@ export async function middleware(request: NextRequest) {
 
   if (user && isPublic) {
     const next = request.nextUrl.searchParams.get('next')
-    const destination = next && next.startsWith('/') ? next : '/dashboard'
+    // Reject protocol-relative URLs (//evil.com) to prevent open redirect
+    const destination = next?.startsWith('/') && !next.startsWith('//')
+      ? next
+      : '/dashboard'
     return NextResponse.redirect(new URL(destination, request.url))
   }
 

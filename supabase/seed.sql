@@ -1,6 +1,8 @@
 -- ============================================================
 -- Seed local — usuario admin de desarrollo
--- Email: admin@wc26.local   Password: admin1234
+-- ⚠️  LOCAL DEV ONLY — nunca ejecutar en producción.
+--    Aplicar solo via: supabase db reset
+-- Email: admin@wc26.local
 -- ============================================================
 
 insert into auth.users (

@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
   }
   if (!LIVE_STATUSES.has(status) && !FINISHED_STATUSES.has(status)) {
     return NextResponse.json(
-      { error: `Invalid status "${status}". Use: ${[...LIVE_STATUSES, ...FINISHED_STATUSES].join(', ')}` },
+      { error: `Invalid status "${status}". Use: ${Array.from(LIVE_STATUSES).concat(Array.from(FINISHED_STATUSES)).join(', ')}` },
       { status: 400 },
     )
   }
